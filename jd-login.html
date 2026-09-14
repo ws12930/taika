@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>欢迎登录 - 京东风格登录</title>
+<style>
+  :root {
+    --jd-red: #e1251b;
+    --jd-red-hover: #c81623;
+    --jd-red-light: #ff6034;
+    --text-main: #333;
+    --text-sub: #888;
+    --border: #e0e0e0;
+    --border-focus: #e1251b;
+    --error: #e1251b;
+    --success: #52c41a;
+    --bg: #f4f4f4;
+    --radius: 10px;
+    --shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body { height: 100%; }
+
+  body {
+    font-family: "PingFang SC", "Microsoft YaHei", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    color: var(--text-main);
+    background: var(--bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 20px;
+    line-height: 1.5;
+  }
+
+  .login-wrap {
+    width: 100%;
+    max-width: 880px;
+    display: flex;
+    background: #fff;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    min-height: 520px;
+  }
+
+  /* ---------- 左侧品牌区 ---------- */
+  .brand-panel {
+    flex: 1 1 45%;
+    background: linear-gradient(135deg, #e1251b 0%, #ff6034 100%);
+    color: #fff;
+    padding: 48px 40px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    position: relative;
+  }
+  .brand-panel .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 26px;
+    font-weight: 700;
+    letter-spacing: 1px;
+  }
+  .brand-panel .logo .mark {
+    width: 40px; height: 40px;
+    background: #fff;
+    color: var(--jd-red);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px; font-weight: 800;
+  }
+  .brand-panel .slogan {
+    margin-top: 28px;
+  }
+  .brand-panel .slogan h1 {
+    font-size: 30px;
+    font-weight: 700;
+    line-height: 1.35;
+  }
+  .brand-panel .slogan p {
+    margin-top: 14px;
+    font-size: 15px;
+    opacity: 0.92;
+  }
+  .brand-panel .deco {
+    margin-top: 40px;
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .brand-panel .deco span {
+    background: rgba(255, 255, 255, 0.18);
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+  }
+  .brand-panel .footer-tip {
+    font-size: 12px;
+    opacity: 0.8;
+  }
+
+  /* ---------- 右侧表单区 ---------- */
+  .form-panel {
+    flex: 1 1 55%;
+    padding: 48px 44px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  .form-panel .title {
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+  .form-panel .subtitle {
+    font-size: 13px;
+    color: var(--text-sub);
+    margin-bottom: 28px;
+  }
+
+  .field { margin-bottom: 18px; }
+  .field label {
+    display: block;
+    font-size: 13px;
+    color: var(--text-sub);
+    margin-bottom: 7px;
+  }
+  .input-box {
+    position: relative;
+    display: flex;
+    align-items: center;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: #fff;
+    transition: border-color .2s, box-shadow .2s;
+  }
+  .input-box:focus-within {
+    border-color: var(--border-focus);
+    box-shadow: 0 0 0 3px rgba(225, 37, 27, 0.12);
+  }
+  .input-box.error {
+    border-color: var(--error);
+  }
+  .input-box .icon {
+    width: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #bbb;
+    flex-shrink: 0;
+  }
+  .input-box input {
+    flex: 1;
+    border: none;
+    outline: none;
+    font-size: 15px;
+    padding: 13px 12px 13px 0;
+    background: transparent;
+    color: var(--text-main);
+  }
+  .input-box .toggle-pwd {
+    width: 42px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    color: #bbb;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .input-box .toggle-pwd:hover { color: var(--jd-red); }
+
+  .err-msg {
+    font-size: 12px;
+    color: var(--error);
+    margin-top: 6px;
+    min-height: 16px;
+    opacity: 0;
+    transform: translateY(-2px);
+    transition: opacity .2s, transform .2s;
+  }
+  .err-msg.show {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .options {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 13px;
+    margin: 6px 0 22px;
+  }
+  .remember {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    cursor: pointer;
+    color: var(--text-sub);
+    user-select: none;
+  }
+  .remember input { width: 15px; height: 15px; accent-color: var(--jd-red); cursor: pointer; }
+  .remember:hover { color: var(--text-main); }
+  .forgot {
+    color: var(--jd-red);
+    text-decoration: none;
+  }
+  .forgot:hover { text-decoration: underline; }
+
+  .btn-login {
+    width: 100%;
+    border: none;
+    background: linear-gradient(90deg, #e1251b, #ff6034);
+    color: #fff;
+    font-size: 16px;
+    font-weight: 600;
+    padding: 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: filter .2s, transform .1s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+  }
+  .btn-login:hover { filter: brightness(1.05); }
+  .btn-login:active { transform: scale(0.99); }
+  .btn-login:disabled { opacity: 0.7; cursor: not-allowed; }
+
+  .spinner {
+    width: 16px; height: 16px;
+    border: 2px solid rgba(255, 255, 255, 0.5);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin .7s linear infinite;
+    display: none;
+  }
+  .btn-login.loading .spinner { display: inline-block; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: #ccc;
+    font-size: 12px;
+    margin: 26px 0 18px;
+  }
+  .divider::before, .divider::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: #eee;
+  }
+  .alt-login {
+    display: flex;
+    justify-content: center;
+    gap: 22px;
+  }
+  .alt-login .item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--text-sub);
+    cursor: pointer;
+  }
+  .alt-login .item .circle {
+    width: 42px; height: 42px;
+    border-radius: 50%;
+    border: 1px solid #eee;
+    display: flex; align-items: center; justify-content: center;
+    color: #999;
+    transition: all .2s;
+  }
+  .alt-login .item:hover .circle { border-color: var(--jd-red); color: var(--jd-red); }
+  .alt-login .item:hover { color: var(--jd-red); }
+
+  .register-tip {
+    text-align: center;
+    margin-top: 22px;
+    font-size: 13px;
+    color: var(--text-sub);
+  }
+  .register-tip a { color: var(--jd-red); text-decoration: none; }
+  .register-tip a:hover { text-decoration: underline; }
+
+  /* ---------- Toast ---------- */
+  .toast {
+    position: fixed;
+    top: 28px;
+    left: 50%;
+    transform: translateX(-50%) translateY(-20px);
+    background: #fff;
+    color: var(--text-main);
+    padding: 12px 22px;
+    border-radius: 8px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.18);
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .3s, transform .3s;
+    z-index: 999;
+    border-left: 4px solid var(--success);
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  .toast.error { border-left-color: var(--error); }
+  .toast .dot { width: 18px; height: 18px; border-radius: 50%; flex-shrink: 0; }
+
+  /* ---------- 响应式 ---------- */
+  @media (max-width: 768px) {
+    body { padding: 0; }
+    .login-wrap {
+      flex-direction: column;
+      max-width: 420px;
+      min-height: auto;
+      border-radius: 0;
+      box-shadow: none;
+    }
+    .brand-panel {
+      flex: none;
+      padding: 32px 28px;
+    }
+    .brand-panel .slogan h1 { font-size: 22px; }
+    .brand-panel .deco { display: none; }
+    .form-panel {
+      flex: none;
+      padding: 32px 28px 40px;
+    }
+  }
+
+  @media (max-width: 380px) {
+    .form-panel { padding: 26px 20px 34px; }
+    .options { font-size: 12px; }
+  }
+</style>
+</head>
+<body>
+  <div class="login-wrap">
+    <!-- 左侧品牌区 -->
+    <aside class="brand-panel">
+      <div class="logo">
+        <span class="mark">JD</span>
+        <span>京东商城</span>
+      </div>
+      <div class="slogan">
+        <h1>多快好省<br />只为品质生活</h1>
+        <p>登录您的账户，畅享一站式购物体验</p>
+        <div class="deco">
+          <span>正品保障</span>
+          <span>极速配送</span>
+          <span>售后无忧</span>
+        </div>
+      </div>
+      <div class="footer-tip">演示页面 · 仅用于前端交互展示</div>
+    </aside>
+
+    <!-- 右侧表单区 -->
+    <main class="form-panel">
+      <div class="title">账户登录</div>
+      <div class="subtitle">请输入您的手机号或用户名</div>
+
+      <form id="loginForm" novalidate>
+        <div class="field">
+          <label for="identifier">手机号 / 用户名</label>
+          <div class="input-box" id="box-identifier">
+            <span class="icon" aria-hidden="true">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="8" r="4"></circle>
+                <path d="M4 21c0-4 4-6 8-6s8 2 8 6"></path>
+              </svg>
+            </span>
+            <input type="text" id="identifier" name="identifier" autocomplete="username"
+                   placeholder="请输入手机号或用户名" />
+          </div>
+          <div class="err-msg" id="err-identifier"></div>
+        </div>
+
+        <div class="field">
+          <label for="password">密码</label>
+          <div class="input-box" id="box-password">
+            <span class="icon" aria-hidden="true">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="4" y="10" width="16" height="10" rx="2"></rect>
+                <path d="M8 10V7a4 4 0 0 1 8 0v3"></path>
+              </svg>
+            </span>
+            <input type="password" id="password" name="password" autocomplete="current-password"
+                   placeholder="请输入密码（6-20位）" />
+            <button type="button" class="toggle-pwd" id="togglePwd" aria-label="显示/隐藏密码">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+            </button>
+          </div>
+          <div class="err-msg" id="err-password"></div>
+        </div>
+
+        <div class="options">
+          <label class="remember">
+            <input type="checkbox" id="remember" />
+            记住密码
+          </label>
+          <a href="#" class="forgot" id="forgot">忘记密码？</a>
+        </div>
+
+        <button type="submit" class="btn-login" id="loginBtn">
+          <span class="spinner"></span>
+          <span class="btn-text">登 录</span>
+        </button>
+      </form>
+
+      <div class="divider">其他登录方式</div>
+      <div class="alt-login">
+        <div class="item" data-type="微信">
+          <span class="circle">微</span>
+          <span>微信</span>
+        </div>
+        <div class="item" data-type="QQ">
+          <span class="circle">Q</span>
+          <span>QQ</span>
+        </div>
+        <div class="item" data-type="二维码">
+          <span class="circle">码</span>
+          <span>扫码</span>
+        </div>
+      </div>
+
+      <div class="register-tip">还没有账户？<a href="#" id="register">立即注册</a></div>
+    </main>
+  </div>
+
+  <div class="toast" id="toast"><span class="dot"></span><span class="toast-text"></span></div>
+
+<script>
+(function () {
+  "use strict";
+
+  var $ = function (id) { return document.getElementById(id); };
+  var form = $("loginForm");
+  var identifier = $("identifier");
+  var password = $("password");
+  var remember = $("remember");
+  var loginBtn = $("loginBtn");
+
+  var STORE_KEY = "jd_login_demo_creds";
+
+  // ---------- 校验规则 ----------
+  function validateIdentifier(val) {
+    val = (val || "").trim();
+    if (!val) return "请输入手机号或用户名";
+    // 纯数字视为手机号
+    if (/^\d+$/.test(val)) {
+      if (!/^1[3-9]\d{9}$/.test(val)) return "手机号格式不正确（11位，1开头）";
+    } else {
+      if (val.length < 3) return "用户名至少3个字符";
+      if (val.length > 20) return "用户名不能超过20个字符";
+    }
+    return "";
+  }
+
+  function validatePassword(val) {
+    val = val || "";
+    if (!val) return "请输入密码";
+    if (val.length < 6 || val.length > 20) return "密码长度为6-20位";
+    return "";
+  }
+
+  // ---------- 错误提示 ----------
+  function setError(field, msg) {
+    var box = $("box-" + field);
+    var err = $("err-" + field);
+    if (msg) {
+      box.classList.add("error");
+      err.textContent = msg;
+      err.classList.add("show");
+    } else {
+      box.classList.remove("error");
+      err.textContent = "";
+      err.classList.remove("show");
+    }
+    return !msg;
+  }
+
+  function clearError(field) {
+    setError(field, "");
+  }
+
+  // 实时校验（输入时 + 失焦时）
+  var idTimer = null;
+  identifier.addEventListener("input", function () {
+    clearTimeout(idTimer);
+    idTimer = setTimeout(function () {
+      if (identifier.value.trim() !== "") setError("identifier", validateIdentifier(identifier.value));
+      else clearError("identifier");
+    }, 250);
+  });
+  identifier.addEventListener("blur", function () {
+    setError("identifier", validateIdentifier(identifier.value));
+  });
+
+  password.addEventListener("input", function () {
+    if (password.value !== "") setError("password", validatePassword(password.value));
+    else clearError("password");
+  });
+  password.addEventListener("blur", function () {
+    setError("password", validatePassword(password.value));
+  });
+
+  // ---------- 显示/隐藏密码 ----------
+  $("togglePwd").addEventListener("click", function () {
+    var show = password.type === "password";
+    password.type = show ? "text" : "password";
+  });
+
+  // ---------- Toast ----------
+  var toastTimer = null;
+  function toast(msg, isError) {
+    var t = $("toast");
+    t.querySelector(".toast-text").textContent = msg;
+    t.classList.toggle("error", !!isError);
+    t.querySelector(".dot").style.background = isError ? "var(--error)" : "var(--success)";
+    t.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { t.classList.remove("show"); }, 2600);
+  }
+
+  // ---------- 记住密码（演示：存于 localStorage） ----------
+  function loadRemembered() {
+    try {
+      var raw = localStorage.getItem(STORE_KEY);
+      if (!raw) return;
+      var data = JSON.parse(raw);
+      if (data && data.identifier) {
+        identifier.value = data.identifier;
+        if (data.password) password.value = data.password;
+        remember.checked = true;
+      }
+    } catch (e) { /* 忽略损坏数据 */ }
+  }
+  function saveRemembered() {
+    try {
+      localStorage.setItem(STORE_KEY, JSON.stringify({
+        identifier: identifier.value.trim(),
+        password: password.value
+      }));
+    } catch (e) { /* 隐私模式等忽略 */ }
+  }
+  function clearRemembered() {
+    try { localStorage.removeItem(STORE_KEY); } catch (e) {}
+  }
+
+  // ---------- 忘记密码 / 注册 / 其他登录 ----------
+  $("forgot").addEventListener("click", function (e) {
+    e.preventDefault();
+    toast("已为您跳转至找回密码（演示）", false);
+  });
+  $("register").addEventListener("click", function (e) {
+    e.preventDefault();
+    toast("打开注册页（演示）", false);
+  });
+  var altItems = document.querySelectorAll(".alt-login .item");
+  Array.prototype.forEach.call(altItems, function (el) {
+    el.addEventListener("click", function () {
+      toast("使用" + el.getAttribute("data-type") + "登录（演示）", false);
+    });
+  });
+
+  // ---------- 提交 ----------
+  form.addEventListener("submit", function (e) {
+    e.preventDefault();
+
+    var okId = setError("identifier", validateIdentifier(identifier.value));
+    var okPw = setError("password", validatePassword(password.value));
+
+    if (!okId || !okPw) {
+      // 聚焦第一个错误字段
+      if (!okId) identifier.focus();
+      else password.focus();
+      toast("请检查登录信息", true);
+      return;
+    }
+
+    // 模拟登录请求
+    loginBtn.classList.add("loading");
+    loginBtn.disabled = true;
+    loginBtn.querySelector(".btn-text").textContent = "登录中...";
+
+    setTimeout(function () {
+      loginBtn.classList.remove("loading");
+      loginBtn.disabled = false;
+      loginBtn.querySelector(".btn-text").textContent = "登 录";
+
+      if (remember.checked) saveRemembered();
+      else clearRemembered();
+
+      // 演示：实际项目此处调用后端接口
+      console.log("[演示登录] 账号:", identifier.value.trim(), "密码:", password.value);
+      toast("登录成功，欢迎回来！（演示）", false);
+    }, 1200);
+  });
+
+  // 初始化：回填记住的账户
+  loadRemembered();
+})();
+</script>
+</body>
+</html>
