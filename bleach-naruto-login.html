@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>死神 VS 火影 · 登录</title>
+<style>
+  :root {
+    --bleach: #2ee6ff;      /* 死神·灵力青 */
+    --bleach-deep: #0a1a2f;
+    --naruto: #ff7b1a;      /* 火影·查克拉橙 */
+    --naruto-deep: #2a0a05;
+    --accent: var(--bleach);
+    --accent2: var(--naruto);
+    --text: #f5f7fa;
+    --text-sub: #aeb8c4;
+    --error: #ff4d5e;
+    --glass: rgba(16, 20, 32, 0.55);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    font-family: "PingFang SC", "Microsoft YaHei", "Hiragino Sans GB", sans-serif;
+    color: var(--text);
+    overflow: hidden;
+    background: #05070d;
+  }
+
+  /* ---------- 动态背景 ---------- */
+  #bg { position: fixed; inset: 0; z-index: 0; display: block; }
+
+  /* ---------- 角色背景图（内嵌 SVG，叠在粒子之上、卡片之下） ---------- */
+  .bg-art {
+    position: fixed; inset: 0; z-index: 1; pointer-events: none;
+    opacity: .92;
+    animation: artFloat 9s ease-in-out infinite;
+  }
+  .bg-art svg { width: 100%; height: 100%; display: block; }
+  @keyframes artFloat { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+
+  /* ===== 角色动态姿势改用 SVG 原生 SMIL（见下方 <svg>），不依赖 CSS transform-box ===== */
+
+  /* ===== AI生成角色立绘（侧边英雄，暗色背景融入） ===== */
+  .hero {
+    position: fixed; bottom: -16%; z-index: 2;
+    pointer-events: none;
+    max-height: 112vh; width: auto; object-fit: contain; object-position: bottom center;
+    filter: drop-shadow(0 0 30px rgba(0,0,0,0.6)) brightness(1.03) saturate(1.04);
+    mask-image: linear-gradient(to bottom, transparent 0%, black 6%, black 90%, transparent 100%);
+    -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 6%, black 90%, transparent 100%);
+    animation: heroFloat 7s ease-in-out infinite;
+  }
+  .hero-left { left: 1%; transform-origin: bottom center; }
+  .hero-right { right: 1%; transform-origin: bottom center; animation-name: heroFloatR; }
+  @keyframes heroFloat {
+    0%,100% { transform: translateY(0); } 50% { transform: translateY(-12px); }
+  }
+  @keyframes heroFloatR {
+    0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); }
+  }
+
+  /* ---------- 阵营选中时立绘外发光 ---------- */
+  .hero.glow-ichigo {
+    filter: drop-shadow(0 0 30px rgba(0,0,0,0.6)) drop-shadow(0 0 26px rgba(46,230,255,.55));
+    animation: heroFloat 7s ease-in-out infinite, heroGlowI 2.8s ease-in-out infinite;
+  }
+  .hero.glow-naruto {
+    filter: drop-shadow(0 0 30px rgba(0,0,0,0.6)) drop-shadow(0 0 26px rgba(255,123,26,.55));
+    animation: heroFloatR 7s ease-in-out infinite, heroGlowN 2.8s ease-in-out infinite;
+  }
+  @keyframes heroGlowI {
+    0%,100% { filter: drop-shadow(0 0 30px rgba(0,0,0,0.6)) brightness(1.04) saturate(1.08) drop-shadow(0 0 20px rgba(46,230,255,.45)); }
+    50%     { filter: drop-shadow(0 0 30px rgba(0,0,0,0.6)) brightness(1.08) saturate(1.16) drop-shadow(0 0 40px rgba(46,230,255,.85)); }
+  }
+  @keyframes heroGlowN {
+    0%,100% { filter: drop-shadow(0 0 30px rgba(0,0,0,0.6)) brightness(1.04) saturate(1.08) drop-shadow(0 0 20px rgba(255,123,26,.45)); }
+    50%     { filter: drop-shadow(0 0 30px rgba(0,0,0,0.6)) brightness(1.08) saturate(1.16) drop-shadow(0 0 40px rgba(255,123,26,.85)); }
+  }
+
+  @media (max-width: 960px) {
+    .hero { max-height: 88vh; opacity: 0.75; }
+  }
+  @media (max-width: 640px) {
+    .hero { display: none; }
+  }
+
+  .vignette {
+    position: fixed; inset: 0; z-index: 2; pointer-events: none;
+      background:
+        radial-gradient(120% 80% at 100% 50%, rgba(255,123,26,0.18), transparent 55%),
+        radial-gradient(100% 100% at 50% 50%, transparent 40%, rgba(0,0,0,0.55) 100%);
+  }
+
+  /* ---------- 鸣人螺旋丸（蓝色，对准右手，叠在立绘之上） ---------- */
+  .rasang-wrap {
+    position: fixed; z-index: 2;
+    left: 71%; top: 33%;
+    width: 13vh; height: 13vh;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    filter: brightness(var(--ras-beat, 1));
+  }
+  .rasang {
+    position: absolute; inset: 0; border-radius: 50%;
+    background: radial-gradient(circle at 50% 50%,
+      #ffffff 0%, #e3f2ff 16%, #8fc8ff 40%,
+      rgba(58,160,255,0.5) 70%, rgba(58,160,255,0) 100%);
+    box-shadow: 0 0 5vh rgba(58,160,255,0.5), inset 0 0 2.4vh rgba(255,255,255,0.45);
+    animation: rasBreathe 2.6s ease-in-out infinite;
+  }
+  @keyframes rasBreathe {
+    0%,100% { transform: scale(0.92); }
+    50% { transform: scale(1.09); }
+  }
+  .ras-ring {
+    position: absolute; inset: -7%; border-radius: 50%;
+    border: 2px solid rgba(191,227,255,0.6);
+    border-top-color: rgba(255,255,255,0.95);
+    border-right-color: rgba(140,200,255,0.35);
+    animation: rasSpin 3.4s linear infinite;
+  }
+  .ras-ring.r2 {
+    inset: 9%; border-style: dashed; opacity: 0.7;
+    animation: rasSpin 2.3s linear infinite reverse;
+  }
+  @keyframes rasSpin { to { transform: rotate(360deg); } }
+  @media (max-width: 640px) {
+    .rasang-wrap { display: none; }
+  }
+
+  /* ---------- 居中舞台 ---------- */
+  .stage {
+    position: relative; z-index: 3;
+    min-height: 100%;
+    display: flex; align-items: center; justify-content: center;
+    padding: 24px;
+  }
+
+  .card {
+    width: 100%; max-width: 400px;
+    background: var(--glass);
+    backdrop-filter: blur(14px) saturate(140%);
+    -webkit-backdrop-filter: blur(14px) saturate(140%);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 18px;
+    padding: 38px 34px 34px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5),
+                0 0 0 1px rgba(255,255,255,0.04) inset;
+    position: relative;
+    overflow: hidden;
+    animation: cardIn .8s cubic-bezier(.2,.8,.2,1) both;
+  }
+  .card::before {
+    content: ""; position: absolute; inset: 0; pointer-events: none;
+    background: linear-gradient(180deg, rgba(255,255,255,0.08), transparent 30%);
+  }
+  @keyframes cardIn { from { opacity: 0; transform: translateY(26px) scale(.97); } to { opacity: 1; transform: none; } }
+
+  /* ---------- 标题 / 阵营 ---------- */
+  .title {
+    text-align: center; margin-bottom: 6px;
+    font-size: 26px; font-weight: 800; letter-spacing: 2px;
+    background: linear-gradient(90deg, var(--bleach), #fff 50%, var(--naruto));
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    filter: drop-shadow(0 2px 10px rgba(46,230,255,.25));
+  }
+  .subtitle { text-align: center; font-size: 12.5px; color: var(--text-sub); margin-bottom: 22px; letter-spacing: 1px; }
+
+  .faction {
+    display: flex; gap: 10px; margin-bottom: 22px;
+  }
+  .faction .chip {
+    flex: 1; text-align: center; cursor: pointer;
+    padding: 9px 0; border-radius: 10px; font-size: 13px; font-weight: 600;
+    border: 1px solid rgba(255,255,255,0.14); color: var(--text-sub);
+    background: rgba(255,255,255,0.03);
+    transition: all .25s ease; user-select: none;
+    position: relative; overflow: hidden;
+  }
+  .faction .chip .ic { font-size: 15px; margin-right: 5px; }
+  .faction .chip.active.bleach {
+    color: #eafdff; border-color: var(--bleach);
+    background: linear-gradient(180deg, rgba(46,230,255,.22), rgba(46,230,255,.05));
+    box-shadow: 0 0 18px rgba(46,230,255,.35);
+  }
+  .faction .chip.active.naruto {
+    color: #fff3e8; border-color: var(--naruto);
+    background: linear-gradient(180deg, rgba(255,123,26,.22), rgba(255,123,26,.05));
+    box-shadow: 0 0 18px rgba(255,123,26,.35);
+  }
+
+  /* ---------- 输入框 ---------- */
+  .field { margin-bottom: 16px; position: relative; }
+  .input-wrap {
+    display: flex; align-items: center;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 11px; overflow: hidden;
+    transition: border-color .25s, box-shadow .25s, background .25s;
+  }
+  .input-wrap .pre {
+    width: 44px; display: flex; align-items: center; justify-content: center;
+    color: var(--text-sub); transition: color .25s;
+  }
+  .input-wrap input {
+    flex: 1; border: none; outline: none; background: transparent;
+    color: var(--text); font-size: 15px; padding: 14px 12px 14px 0;
+    letter-spacing: .5px;
+  }
+  .input-wrap input::placeholder { color: #6f7a88; }
+  .input-wrap .suf {
+    width: 40px; display: flex; align-items: center; justify-content: center;
+    color: var(--text-sub); cursor: pointer;
+  }
+  .input-wrap .suf:hover { color: var(--accent); }
+
+  /* 聚焦动画：辉光 + 下划线扫光 */
+  .input-wrap.focus {
+    border-color: var(--accent);
+    background: rgba(255,255,255,0.07);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent);
+  }
+  .input-wrap.focus .pre { color: var(--accent); }
+  .input-wrap::after {
+    content: ""; position: absolute; left: 0; bottom: 0; height: 2px; width: 0;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    transition: width .35s ease;
+  }
+  .input-wrap.focus::after { width: 100%; }
+
+  .input-wrap.error { border-color: var(--error); box-shadow: 0 0 0 3px rgba(255,77,94,.18); }
+  .field.shake { animation: shake .4s; }
+  @keyframes shake {
+    0%,100% { transform: translateX(0); }
+    20% { transform: translateX(-7px); } 40% { transform: translateX(6px); }
+    60% { transform: translateX(-4px); } 80% { transform: translateX(3px); }
+  }
+  .err-msg {
+    font-size: 12px; color: var(--error); margin-top: 6px; min-height: 15px;
+    opacity: 0; transform: translateY(-3px); transition: opacity .2s, transform .2s;
+  }
+  .err-msg.show { opacity: 1; transform: none; }
+
+  /* ---------- 登录按钮 ---------- */
+  .btn-login {
+    width: 100%; margin-top: 8px; position: relative; overflow: hidden;
+    border: none; cursor: pointer; color: #07121a; font-weight: 800;
+    font-size: 16px; letter-spacing: 3px; padding: 15px;
+    border-radius: 11px;
+    background: linear-gradient(90deg, var(--bleach), #8fd9ff 45%, var(--naruto));
+    background-size: 200% 100%; background-position: 0% 0%;
+    box-shadow: 0 8px 26px rgba(46,230,255,.25), 0 8px 26px rgba(255,123,26,.18);
+    transition: transform .12s, box-shadow .25s, background-position .5s;
+  }
+  .btn-login:hover {
+    background-position: 100% 0%;
+    box-shadow: 0 10px 34px rgba(46,230,255,.4), 0 10px 34px rgba(255,123,26,.3);
+  }
+  .btn-login:active { transform: scale(.985); }
+  .btn-login:disabled { opacity: .7; cursor: progress; }
+  .btn-login .ripple {
+    position: absolute; border-radius: 50%; transform: scale(0);
+    background: rgba(255,255,255,.5); animation: ripple .6s ease-out; pointer-events: none;
+  }
+  @keyframes ripple { to { transform: scale(4); opacity: 0; } }
+
+  .spinner {
+    width: 17px; height: 17px; border: 2px solid rgba(7,18,26,.35);
+    border-top-color: #07121a; border-radius: 50%;
+    animation: spin .7s linear infinite; display: none; vertical-align: middle;
+    margin-right: 8px;
+  }
+  .btn-login.loading .spinner { display: inline-block; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .foot { text-align: center; margin-top: 18px; font-size: 12px; color: var(--text-sub); }
+  .foot a { color: var(--accent); text-decoration: none; }
+  .foot a:hover { text-decoration: underline; }
+
+  /* ---------- Toast ---------- */
+  .toast {
+    position: fixed; top: 26px; left: 50%; z-index: 50;
+    transform: translateX(-50%) translateY(-20px); opacity: 0;
+    background: rgba(20,26,38,.92); color: #fff; padding: 12px 22px;
+    border-radius: 10px; font-size: 14px; border-left: 4px solid var(--bleach);
+    box-shadow: 0 10px 34px rgba(0,0,0,.4); transition: opacity .3s, transform .3s;
+    display: flex; align-items: center; gap: 10px; pointer-events: none;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  .toast.error { border-left-color: var(--error); }
+  .toast.ok { border-left-color: #38e07a; }
+
+  /* ---------- 响应式 ---------- */
+  @media (max-width: 480px) {
+    .stage { padding: 16px; align-items: flex-start; padding-top: 8vh; }
+    .card { padding: 30px 22px 26px; border-radius: 16px; }
+    .title { font-size: 22px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .card, .bg-art { animation: none; }
+  }
+</style>
+</head>
+<body>
+  <canvas id="bg"></canvas>
+
+  <!-- 死神（左） vs 火影（右）对战背景图（动态姿势） -->
+  <div class="bg-art" aria-hidden="true">
+    <svg viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <filter id="gO" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="7"/></filter>
+        <radialGradient id="ras" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stop-color="#ffffff"/>
+          <stop offset="30%" stop-color="#bfe3ff"/>
+          <stop offset="68%" stop-color="#3aa0ff"/>
+          <stop offset="100%" stop-color="rgba(58,160,255,0)"/>
+        </radialGradient>
+      </defs>
+
+      <!-- 死神侧特效已移除 -->
+
+      <!-- ===== 火影（右）· 螺旋丸突进（SMIL 动画） ===== -->
+      <g>
+        <!-- 身体突进（lunge） -->
+        <animateTransform attributeName="transform" type="translate"
+          values="0 0; -18 0; 0 0" keyTimes="0;0.66;1" dur="4.2s" repeatCount="indefinite"
+          calcMode="spline" keySplines="0.3 0 0.2 1; 0.4 0 0.2 1" />
+        <!-- 螺旋丸 光球（呼吸脉冲：半径 + 透明度） -->
+        <circle cx="1064" cy="556" r="62" fill="url(#ras)" filter="url(#gO)">
+          <animate attributeName="r" values="62;74;62" dur="2.6s" repeatCount="indefinite"/>
+          <animate attributeName="opacity" values="0.5;0.66;0.5" dur="2.6s" repeatCount="indefinite"/>
+        </circle>
+        <!-- 螺旋丸 漩涡（持续旋转，放慢更从容） -->
+        <g>
+          <animateTransform attributeName="transform" type="rotate"
+            from="0 1064 556" to="360 1064 556" dur="3.4s" repeatCount="indefinite"/>
+          <circle cx="1064" cy="556" r="62" fill="none" stroke="#bfe3ff" stroke-width="2" opacity="0.45"/>
+          <path d="M 1064 556 m 0 -44 a 44 44 0 1 1 -30 13" fill="none" stroke="#e3f2ff" stroke-width="3" stroke-linecap="round" opacity="0.6"/>
+          <path d="M 1064 556 m 0 -28 a 28 28 0 1 0 20 -8" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" opacity="0.5"/>
+        </g>
+        <!-- 身体（忍者装） -->
+        <g fill="rgba(30,14,8,0.6)">
+          <circle cx="1196" cy="424" r="36"/>
+          <path d="M 1160 462 L 1232 462 L 1260 840 L 1132 840 Z"/>
+          <rect x="1160" y="412" width="72" height="12" rx="4" fill="#ff7b1a" opacity="0.85"/>
+        </g>
+        <!-- 伸出手臂（残影） -->
+        <path d="M 1168 520 L 1064 548 L 1066 572 L 1170 548 Z" fill="rgba(30,14,8,0.12)"/>
+      </g>
+
+      <!-- ===== 中央对撞火花（半径 + 透明度脉冲） ===== -->
+      <g>
+        <circle cx="720" cy="500" r="40" fill="none" stroke="#fff" stroke-width="3" opacity="0">
+          <animate attributeName="r" values="14;46;46" keyTimes="0;0.66;1" dur="4.2s" repeatCount="indefinite"/>
+          <animate attributeName="opacity" values="0;0.7;0" keyTimes="0;0.66;0.84" dur="4.2s" repeatCount="indefinite"/>
+        </circle>
+        <circle cx="720" cy="500" r="64" fill="none" stroke="#9fe9ff" stroke-width="2" opacity="0">
+          <animate attributeName="r" values="24;72;72" keyTimes="0;0.66;1" dur="4.2s" repeatCount="indefinite"/>
+          <animate attributeName="opacity" values="0;0.4;0" keyTimes="0;0.66;0.84" dur="4.2s" repeatCount="indefinite"/>
+        </circle>
+      </g>
+
+      <!-- ===== 中央 VS 徽记 ===== -->
+      <text x="720" y="505" text-anchor="middle" font-family="'Arial Black', sans-serif" font-size="130" font-weight="900" fill="rgba(255,255,255,0.10)" transform="rotate(-6 720 505)">VS</text>
+    </svg>
+  </div>
+
+  <div class="vignette"></div>
+
+  <!-- ===== 角色立绘（AI生成，透明背景融入暗色页面） ===== -->
+  <img class="hero hero-left" src="ichigo_cut.png" alt="黑崎一护" />
+  <img class="hero hero-right" src="naruto_cut.png" alt="漩涡鸣人" />
+
+  <!-- 鸣人右手螺旋丸（蓝色，对准手部，随攻击节拍增亮） -->
+  <div class="rasang-wrap" id="rasengan" aria-hidden="true">
+    <div class="rasang">
+      <span class="ras-ring r1"></span>
+      <span class="ras-ring r2"></span>
+    </div>
+  </div>
+
+  <div class="stage">
+    <div class="card">
+      <div class="title">死神 VS 火影</div>
+      <div class="subtitle">Soul Society × Hidden Leaf · 登录战场</div>
+
+      <div class="faction" id="faction">
+        <div class="chip bleach active" data-f="bleach"><span class="ic">⚔</span>护廷十三队</div>
+        <div class="chip naruto" data-f="naruto"><span class="ic">🔥</span>木叶忍者</div>
+      </div>
+
+      <form id="loginForm" novalidate>
+        <div class="field" id="field-user">
+          <div class="input-wrap" id="wrap-user">
+            <span class="pre" aria-hidden="true">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="8" r="4"></circle><path d="M4 21c0-4 4-6 8-6s8 2 8 6"></path>
+              </svg>
+            </span>
+            <input type="text" id="user" autocomplete="username" placeholder="请输入忍者代号 / 死神名" />
+          </div>
+          <div class="err-msg" id="err-user"></div>
+        </div>
+
+        <div class="field" id="field-pass">
+          <div class="input-wrap" id="wrap-pass">
+            <span class="pre" aria-hidden="true">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="4" y="10" width="16" height="10" rx="2"></rect><path d="M8 10V7a4 4 0 0 1 8 0v3"></path>
+              </svg>
+            </span>
+            <input type="password" id="pass" autocomplete="current-password" placeholder="请输入灵压 / 查克拉密码" />
+            <span class="suf" id="toggle" aria-label="显示密码">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"></path><circle cx="12" cy="12" r="3"></circle>
+              </svg>
+            </span>
+          </div>
+          <div class="err-msg" id="err-pass"></div>
+        </div>
+
+        <button type="submit" class="btn-login" id="loginBtn">
+          <span class="spinner"></span><span class="btn-text">进 入 战 场</span>
+        </button>
+      </form>
+
+      <div class="foot">还没有身份？<a href="#" id="reg">唤醒你的力量</a></div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"><span id="toastText"></span></div>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ===================== 阵营切换 ===================== */
+  var root = document.documentElement;
+  var faction = document.getElementById("faction");
+  var heroL = document.querySelector(".hero-left");   // 黑崎一护
+  var heroR = document.querySelector(".hero-right");  // 漩涡鸣人
+  function syncFactionGlow(f) {
+    heroL.classList.toggle("glow-ichigo", f === "bleach");
+    heroR.classList.toggle("glow-naruto", f === "naruto");
+  }
+  faction.addEventListener("click", function (e) {
+    var chip = e.target.closest(".chip");
+    if (!chip) return;
+    var f = chip.getAttribute("data-f");
+    Array.prototype.forEach.call(faction.children, function (c) { c.classList.remove("active"); });
+    chip.classList.add("active");
+    if (f === "bleach") {
+      root.style.setProperty("--accent", "#2ee6ff");
+      root.style.setProperty("--accent2", "#ff7b1a");
+    } else {
+      root.style.setProperty("--accent", "#ff7b1a");
+      root.style.setProperty("--accent2", "#2ee6ff");
+    }
+    syncFactionGlow(f);
+  });
+  syncFactionGlow("bleach");   // 默认护廷十三队 → 一护发光
+
+  /* ===================== 输入框聚焦动画 ===================== */
+  function bindFocus(wrapId, inputId) {
+    var wrap = document.getElementById(wrapId);
+    var input = document.getElementById(inputId);
+    input.addEventListener("focus", function () { wrap.classList.add("focus"); });
+    input.addEventListener("blur", function () { wrap.classList.remove("focus"); });
+  }
+  bindFocus("wrap-user", "user");
+  bindFocus("wrap-pass", "pass");
+
+  document.getElementById("toggle").addEventListener("click", function () {
+    var p = document.getElementById("pass");
+    p.type = p.type === "password" ? "text" : "password";
+  });
+
+  /* ===================== 校验 ===================== */
+  function valUser(v) {
+    v = (v || "").trim();
+    if (!v) return "请输入忍者代号或死神名";
+    if (v.length < 3) return "代号至少 3 个字符";
+    return "";
+  }
+  function valPass(v) {
+    v = v || "";
+    if (!v) return "请输入密码";
+    if (v.length < 6) return "灵压 / 查克拉不足（至少 6 位）";
+    return "";
+  }
+  function setErr(field, wrap, errId, msg) {
+    var e = document.getElementById(errId);
+    if (msg) {
+      wrap.classList.add("error");
+      e.textContent = msg; e.classList.add("show");
+      document.getElementById(field).classList.add("shake");
+      setTimeout(function () { document.getElementById(field).classList.remove("shake"); }, 420);
+      return false;
+    }
+    wrap.classList.remove("error"); e.textContent = ""; e.classList.remove("show");
+    return true;
+  }
+
+  var user = document.getElementById("user");
+  var pass = document.getElementById("pass");
+  user.addEventListener("input", function () {
+    if (user.value.trim() !== "") setErr("field-user", document.getElementById("wrap-user"), "err-user", valUser(user.value));
+    else setErr("field-user", document.getElementById("wrap-user"), "err-user", "");
+  });
+  user.addEventListener("blur", function () { setErr("field-user", document.getElementById("wrap-user"), "err-user", valUser(user.value)); });
+  pass.addEventListener("input", function () {
+    if (pass.value !== "") setErr("field-pass", document.getElementById("wrap-pass"), "err-pass", valPass(pass.value));
+    else setErr("field-pass", document.getElementById("wrap-pass"), "err-pass", "");
+  });
+  pass.addEventListener("blur", function () { setErr("field-pass", document.getElementById("wrap-pass"), "err-pass", valPass(pass.value)); });
+
+  /* ===================== Toast ===================== */
+  var toastTimer = null;
+  function toast(msg, type) {
+    var t = document.getElementById("toast");
+    document.getElementById("toastText").textContent = msg;
+    t.className = "toast show" + (type ? " " + type : "");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { t.className = "toast"; }, 2600);
+  }
+
+  /* ===================== 提交（含按钮波纹/loading） ===================== */
+  var btn = document.getElementById("loginBtn");
+  btn.addEventListener("click", function (e) {
+    var r = e.target.getBoundingClientRect();
+    var rip = document.createElement("span");
+    rip.className = "ripple";
+    var size = Math.max(r.width, r.height);
+    rip.style.width = rip.style.height = size + "px";
+    rip.style.left = (e.clientX - r.left - size / 2) + "px";
+    rip.style.top = (e.clientY - r.top - size / 2) + "px";
+    btn.appendChild(rip);
+    setTimeout(function () { rip.remove(); }, 600);
+  });
+
+  document.getElementById("loginForm").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var okU = setErr("field-user", document.getElementById("wrap-user"), "err-user", valUser(user.value));
+    var okP = setErr("field-pass", document.getElementById("wrap-pass"), "err-pass", valPass(pass.value));
+    if (!okU || !okP) { toast("请校准你的力量", "error"); return; }
+
+    btn.classList.add("loading"); btn.disabled = true;
+    btn.querySelector(".btn-text").textContent = "汇聚中...";
+    setTimeout(function () {
+      btn.classList.remove("loading"); btn.disabled = false;
+      btn.querySelector(".btn-text").textContent = "进 入 战 场";
+      console.log("[演示] 身份:", user.value.trim());
+      toast("欢迎归来，战士！（演示）", "ok");
+    }, 1300);
+  });
+
+  document.getElementById("reg").addEventListener("click", function (e) { e.preventDefault(); toast("觉醒仪式开启（演示）", "ok"); });
+
+  /* ===================== 动态背景：粒子 + 斩击 ===================== */
+  var canvas = document.getElementById("bg");
+  var ctx = canvas.getContext("2d");
+  var W, H, DPR, particles = [], slashes = [], ripples = [], swordParticles = [];
+  var rasEl = document.getElementById("rasengan");
+  var isMobile = window.innerWidth < 640;
+
+  // 与角色攻击（SVG SMIL 4.2s 主节拍）同步的时钟，用于驱动背景联动
+  var CYCLE = 4200;
+  var t0 = performance.now();
+  var prevPhase = 0;
+
+  function resize() {
+    DPR = Math.min(window.devicePixelRatio || 1, 2);
+    W = canvas.width = Math.floor(window.innerWidth * DPR);
+    H = canvas.height = Math.floor(window.innerHeight * DPR);
+    canvas.style.width = window.innerWidth + "px";
+    canvas.style.height = window.innerHeight + "px";
+    isMobile = window.innerWidth < 640;
+  }
+  window.addEventListener("resize", resize);
+  resize();
+
+  function rand(a, b) { return a + Math.random() * (b - a); }
+
+  // 查克拉火焰（橙）自右升起
+  function spawnParticle() {
+    var x = rand(W * 0.55, W);
+    var y = rand(H * 0.45, H * 1.05);
+    particles.push({
+      x: x, y: y,
+      vx: -rand(0.15, 0.5) * DPR,
+      vy: -rand(0.3, 1.1) * DPR,
+      r: rand(1, 3.2) * DPR,
+      life: 1,
+      decay: rand(0.003, 0.009),
+      color: [255, 123, 26],
+      flick: rand(0.6, 1)
+    });
+    if (particles.length > (isMobile ? 70 : 140)) particles.shift();
+  }
+
+  function spawnSlash() {
+    var vertical = Math.random() < 0.5;
+    var y = rand(H * 0.2, H * 0.8);
+    var x = rand(W * 0.2, W * 0.8);
+    slashes.push({
+      x: x, y: y,
+      angle: vertical ? Math.PI / 2 : (Math.random() < 0.5 ? -0.5 : 0.5),
+      len: rand(W * 0.25, W * 0.5),
+      life: 1, decay: 0.035,
+      color: [255, 200, 120]
+    });
+    if (slashes.length > 6) slashes.shift();
+  }
+
+  // 角色攻击触发的定向能量爆发（从一侧向中心喷射）
+  function spawnBurst(side) {
+    var col = side < 0 ? [120, 240, 255] : [255, 170, 60];
+    var ox = side < 0 ? W * 0.30 : W * 0.70;
+    for (var k = 0; k < 9; k++) {
+      var ang = (side < 0 ? 0 : Math.PI) + rand(-0.5, 0.5);
+      var sp = rand(1.2, 3.4) * DPR;
+      particles.push({
+        x: ox + rand(-30, 30) * DPR, y: rand(H * 0.35, H * 0.72),
+        vx: Math.cos(ang) * sp, vy: rand(-0.8, 0.4) * DPR,
+        r: rand(1.2, 3) * DPR, life: 1, decay: rand(0.012, 0.022),
+        color: col, flick: rand(0.7, 1)
+      });
+    }
+    if (particles.length > (isMobile ? 90 : 175)) particles.splice(0, particles.length - (isMobile ? 90 : 175));
+  }
+
+  // 波纹扩散
+  function spawnRipple(x, y, maxR, col) {
+    ripples.push({ x: x, y: y, r: 10 * DPR, maxR: maxR * DPR, life: 1, decay: 0.017, color: col });
+    if (ripples.length > 10) ripples.shift();
+  }
+
+  // 一护斩月刀身灵压粒子：沿刀身对角线(柄≈10%/52% → 尖≈30%/88%)生成，向上攀升
+  function spawnSwordParticle() {
+    var t = Math.random();                              // 0=柄 1=尖
+    var bx = W * (0.10 + 0.20 * t);
+    var by = H * (0.54 + 0.34 * t);
+    swordParticles.push({
+      x: bx + (Math.random() - 0.5) * 20 * DPR,
+      y: by + (Math.random() - 0.5) * 16 * DPR,
+      vx: rand(-0.3, 0.3) * DPR,
+      vy: -rand(0.4, 1.1) * DPR,                        // 灵压沿刀身向上攀升
+      r: rand(1.2, 3.6) * DPR,
+      life: 1, decay: rand(0.008, 0.02),
+      color: [46, 230, 255],
+      flick: rand(0.7, 1)
+    });
+    if (swordParticles.length > (isMobile ? 22 : 45)) swordParticles.shift();
+  }
+
+  // 攻击节拍包络：相位 0.66 处为斩月/螺旋丸/中央对撞的同步爆发点
+  function beatEnv(phase) {
+    var d = phase - 0.66;
+    if (Math.abs(d) > 0.11) return 0;
+    return Math.cos(d / 0.11 * Math.PI / 2);
+  }
+
+  function draw() {
+    var now = performance.now();
+    var phase = ((now - t0) % CYCLE) / CYCLE;   // 0..1 角色攻击主相位
+    var beat = beatEnv(phase);                  // 0..1 攻击强度包络
+    if (rasEl) rasEl.style.setProperty("--ras-beat", (1 + beat * 0.6).toFixed(3));  // 螺旋丸随攻击增亮
+
+    // 渐变底色（左青右橙）
+    var g = ctx.createLinearGradient(0, 0, W, 0);
+    g.addColorStop(0, "#07182b");
+    g.addColorStop(0.5, "#0a0d16");
+    g.addColorStop(1, "#2a0f06");
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, W, H);
+
+    // 中央对撞光带（攻击时增强 → 颜色渐变）
+    var cg = ctx.createRadialGradient(W / 2, H / 2, 0, W / 2, H / 2, W * 0.32);
+    cg.addColorStop(0, "rgba(255,255,255," + (0.10 + 0.12 * beat) + ")");
+    cg.addColorStop(0.5, "rgba(120,200,255," + (0.04 + 0.07 * beat) + ")");
+    cg.addColorStop(1, "transparent");
+    ctx.fillStyle = cg;
+    ctx.fillRect(0, 0, W, H);
+
+    ctx.globalCompositeOperation = "lighter";
+
+    // 角色攻击光晕偏移：随 beat 从两侧向中心亮起（青=斩月 / 橙=螺旋丸）+ 中央白闪
+    if (beat > 0.02) {
+      var rg = ctx.createRadialGradient(W * 0.72, H * 0.52, 0, W * 0.72, H * 0.52, W * 0.30);
+      rg.addColorStop(0, "rgba(255,123,26," + (0.08 + 0.24 * beat) + ")");
+      rg.addColorStop(1, "transparent");
+      ctx.fillStyle = rg; ctx.fillRect(0, 0, W, H);
+      var fg = ctx.createRadialGradient(W / 2, H / 2, 0, W / 2, H / 2, W * 0.22);
+      fg.addColorStop(0, "rgba(255,255,255," + (0.16 * beat) + ")");
+      fg.addColorStop(1, "transparent");
+      ctx.fillStyle = fg; ctx.fillRect(0, 0, W, H);
+    }
+
+    // 粒子（含攻击增密）
+    for (var i = particles.length - 1; i >= 0; i--) {
+      var p = particles[i];
+      p.x += p.vx; p.y += p.vy; p.life -= p.decay;
+      if (p.life <= 0 || p.y < -20) { particles.splice(i, 1); continue; }
+      var fl = p.flick * (0.7 + 0.3 * Math.sin(Date.now() / 120 + i));
+      ctx.beginPath();
+      ctx.fillStyle = "rgba(" + p.color[0] + "," + p.color[1] + "," + p.color[2] + "," + (p.life * fl) + ")";
+      ctx.shadowBlur = 9 * DPR; ctx.shadowColor = "rgba(" + p.color[0] + "," + p.color[1] + "," + p.color[2] + ",0.9)";
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.shadowBlur = 0;
+
+    // 一护斩月刀身灵压粒子（青）
+    for (var si = swordParticles.length - 1; si >= 0; si--) {
+      var sp = swordParticles[si];
+      sp.x += sp.vx; sp.y += sp.vy; sp.life -= sp.decay;
+      if (sp.life <= 0) { swordParticles.splice(si, 1); continue; }
+      var sfl = sp.flick * (0.7 + 0.3 * Math.sin(Date.now() / 110 + si));
+      ctx.beginPath();
+      ctx.fillStyle = "rgba(" + sp.color[0] + "," + sp.color[1] + "," + sp.color[2] + "," + (sp.life * sfl) + ")";
+      ctx.shadowBlur = 10 * DPR; ctx.shadowColor = "rgba(46,230,255,0.9)";
+      ctx.arc(sp.x, sp.y, sp.r, 0, Math.PI * 2); ctx.fill();
+    }
+    ctx.shadowBlur = 0;
+
+    // 波纹扩散（攻击爆发时触发）
+    for (var rp = ripples.length - 1; rp >= 0; rp--) {
+      var ri = ripples[rp];
+      ri.r += (ri.maxR - ri.r) * 0.07 + 2 * DPR;
+      ri.life -= ri.decay;
+      if (ri.life <= 0) { ripples.splice(rp, 1); continue; }
+      ctx.beginPath();
+      ctx.strokeStyle = "rgba(" + ri.color[0] + "," + ri.color[1] + "," + ri.color[2] + "," + (ri.life * 0.5) + ")";
+      ctx.lineWidth = 2.5 * DPR;
+      ctx.shadowBlur = 12 * DPR; ctx.shadowColor = "rgba(" + ri.color[0] + "," + ri.color[1] + "," + ri.color[2] + ",1)";
+      ctx.arc(ri.x, ri.y, ri.r, 0, Math.PI * 2); ctx.stroke();
+    }
+    ctx.shadowBlur = 0;
+
+    // 斩击光影（环境）
+    for (var s = slashes.length - 1; s >= 0; s--) {
+      var sl = slashes[s];
+      sl.life -= sl.decay; sl.x += sl.vx || 0;
+      if (sl.life <= 0) { slashes.splice(s, 1); continue; }
+      var dx = Math.cos(sl.angle) * sl.len, dy = Math.sin(sl.angle) * sl.len;
+      ctx.save();
+      ctx.translate(sl.x, sl.y);
+      ctx.rotate(sl.angle);
+      var grad = ctx.createLinearGradient(-sl.len / 2, 0, sl.len / 2, 0);
+      grad.addColorStop(0, "transparent");
+      grad.addColorStop(0.5, "rgba(" + sl.color[0] + "," + sl.color[1] + "," + sl.color[2] + "," + (sl.life * 0.9) + ")");
+      grad.addColorStop(1, "transparent");
+      ctx.strokeStyle = grad;
+      ctx.lineWidth = (2 + sl.life * 4) * DPR;
+      ctx.lineCap = "round";
+      ctx.shadowBlur = 14 * DPR; ctx.shadowColor = "rgba(" + sl.color[0] + "," + sl.color[1] + "," + sl.color[2] + ",1)";
+      ctx.beginPath(); ctx.moveTo(-sl.len / 2, 0); ctx.lineTo(sl.len / 2, 0); ctx.stroke();
+      ctx.restore();
+    }
+    ctx.globalCompositeOperation = "source-over";
+
+    // 角色攻击事件 → 触发背景反馈（相位跨过 0.60 的上升沿时爆发一次）
+    if (prevPhase < 0.60 && phase >= 0.60) {
+      spawnBurst(1);
+      spawnRipple(W * 0.70, H * 0.52, W * 0.26, [255, 170, 60]);
+      spawnRipple(W / 2, H / 2, W * 0.22, [255, 255, 255]);
+    }
+    // 攻击期间粒子持续增密
+    var spawnRate = (isMobile ? 0.45 : 0.6) * (1 + beat * 1.4);
+    if (Math.random() < spawnRate) spawnParticle();
+    if (beat > 0.2 && Math.random() < 0.45 * beat) spawnParticle();
+    if (Math.random() < 0.006) spawnSlash();
+    // 一护斩月刀粒子（常驻，攻击时增密）
+    if (Math.random() < 0.55 + beat * 0.5) spawnSwordParticle();
+
+    prevPhase = phase;
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+</script>
+</body>
+</html>
