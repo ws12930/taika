@@ -1,0 +1,239 @@
+@Entry
+@Component
+struct Index {
+  @State message: string = 'Hello World';
+
+  build() {
+    Column(){
+      Row(){
+        Text('起点中文网')
+          .fontColor('#ffcf2a2a')
+          .fontWeight(FontWeight.Bold)
+
+        Button('男生')
+          .height('50%')
+          .width('60')
+          .backgroundColor(Color.Black)
+          .margin({right:1})
+        Button('女生')
+          .height('50%')
+          .width('60')
+          .margin({right:1})
+        Row(){
+          Text('打开app')
+            .fontColor('#ffa53d3d')
+            .fontSize(15)
+            .backgroundColor('#fface0b4')
+            .borderRadius(20)
+            .padding(5)
+            .margin({right:8})
+
+
+          Image($r('app.media.ss'))
+            .width(25)
+        }
+
+      }
+      .justifyContent(FlexAlign.SpaceBetween)
+      .width('100%')
+      .height('6%')
+
+      Scroll(){
+        Column(){
+          Search({placeholder:'我是神'})
+            .width('100%')
+            .backgroundColor('#ffffffff')
+
+          Swiper(){
+            Image('https://bossaudioandcomic-1252317822.image.myqcloud.com/activity/document/36243d836fe1cf98a7a74056c0c4ae11.jpg')
+              .width('100%')
+            Image('https://bossaudioandcomic-1252317822.image.myqcloud.com/activity/document/606b090ab546f56ea9eeeedfad8d46fd.jpg')
+              .width('100%')
+            Image('https://bossaudioandcomic-1252317822.image.myqcloud.com/activity/document/63bb0be50cb03167509cf0dee9a590ba.jpg')
+              .width('100%')
+            Image('https://bossaudioandcomic-1252317822.image.myqcloud.com/activity/document/b4a86ed4badfa4d27dd59de2d9f0dea9.jpg')
+              .width('100%')
+          }
+          .margin({top:10})
+          .autoPlay(true)
+          .interval(2000)
+          .borderRadius(15)
+          .width('100%')
+
+
+          List(){
+            ListItem(){
+              Column(){
+                Image('https://imgservices-1252317822.image.myqcloud.com/coco/s09082023/c120ddc7.66tydz.png')
+                  .width(50)
+                Text('分类')
+              }
+              .width('20%')
+              .height('100%')
+            }
+            ListItem(){
+              Column(){
+                Image($r('app.media.xh'))
+                  .margin({top:5})
+                  .width(40)
+                Text('玄幻')
+                  .margin({top:5})
+              }
+              .width('20%')
+              .height('100%')
+            }
+            ListItem(){
+              Column(){
+                Image('https://imgservices-1252317822.image.myqcloud.com/coco/s09082023/c6673b84.zuil3k.png')
+                  .width(50)
+                Text('排行榜')
+              }
+              .width('20%')
+              .height('100%')
+            }
+            ListItem(){
+              Column(){
+                Image('https://imgservices-1252317822.image.myqcloud.com/coco/s09082023/ccc9e198.hh0sph.png')
+                  .width(50)
+                Text('免费')
+              }
+              .width('20%')
+              .height('100%')
+            }
+            ListItem(){
+              Column(){
+                Image('https://imgservices-1252317822.image.myqcloud.com/coco/s09082023/403e0032.vfw574.png')
+                  .width(50)
+                Text('完本')
+              }
+              .width('20%')
+              .height('100%')
+            }
+            ListItem(){
+              Column(){
+                Image('https://imgservices-1252317822.image.myqcloud.com/coco/s09082023/8d57d2fc.rmfht6.png')
+                  .width(50)
+                Text('大神')
+              }
+              .width('20%')
+              .height('100%')
+            }
+            ListItem(){
+              Column(){
+                Image('https://imgservices-1252317822.image.myqcloud.com/coco/s09082023/1ca7c55a.h69hv4.png')
+                  .width(50)
+                Text('书单')
+              }
+              .width('20%')
+              .height('100%')
+            }
+          }
+          .listDirection(Axis.Horizontal)
+          .width('100%')
+          .height(70)
+          .borderRadius(15)
+          .margin({top:15})
+
+
+          Row(){
+            Text('起点')
+              .backgroundColor(Color.Red)
+              .fontSize(20)
+              .borderRadius(10)
+              .fontColor(Color.White)
+              .fontWeight(FontWeight.Bold)
+              .padding({left:5,right:5,top:15,bottom:15})
+
+
+            Column(){
+              Text('上起点读书App，看免费小说')
+                .fontSize(14)
+                .padding({left:5,right:10})
+              Text('海量读物，新人免费读14天！')
+                .fontSize(12)
+                .padding({left:5,top:4})
+                .fontColor('#ff7f7f7f')
+            }
+            .alignItems(HorizontalAlign.Start)
+
+            Text('立即下载')
+              .fontSize(14)
+              .padding(5)
+              .backgroundColor(Color.Red)
+              .fontSize(15)
+              .fontWeight(FontWeight.Bold)
+              .fontColor(Color.White)
+              .borderRadius(29)
+
+
+          }
+          .width('100%')
+          .height(75)
+          .borderRadius(15)
+          .padding(10)
+          .backgroundColor(Color.White)
+          .margin({top:30})
+
+
+          Column(){
+            Row(){
+              Row(){
+                Text('新人必读')
+                  .fontSize(23)
+                  .fontWeight(FontWeight.Bold)
+                Text('起点优质书单')
+                  .fontSize(12)
+                  .fontColor('#ff7f7f7f')
+                  .margin({left:7})
+                  .backgroundColor('#fff3f3f3')
+                  .padding({left:5,right:5,top:3,bottom:3})
+              }
+              Row(){
+                Image($r('app.media.sx'))
+                  .width(20)
+                  .colorFilter('#ff6398e0')
+                Text('换一批')
+                  .fontColor('#ff6398e0')
+              }
+
+            }
+            .justifyContent(FlexAlign.SpaceBetween)
+            .width('100%')
+
+           Row(){
+              Column(){
+             Image('https://bookcover.yuewen.com/qdbimg/349573/1038356866/180')
+               .width('100%')
+                Text('噩梦夜谈')
+                  .maxLines(2)
+                  .textOverflow({overflow:TextOverflow.Ellipsis})
+                  .fontSize(12)
+                  .padding({top:5})
+                Text('悬疑灵异·规则怪谈')
+                  .fontSize(10)
+
+               
+           }
+           .alignItems(HorizontalAlign.Start)
+             .width("22%")
+             .height(140)
+           }
+          }
+          .width('100%')
+          .borderRadius(15)
+          .padding(10)
+          .backgroundColor(Color.White)
+          .margin({top:30})
+        }
+      }
+
+      .width('100%')
+      .height('94%')
+
+    }
+    .padding({right:15,left:15})
+    .height('100%')
+    .width('100%')
+    .backgroundColor('#ffe3e2e9')
+  }
+}
